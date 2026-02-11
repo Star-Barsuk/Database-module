@@ -21,11 +21,29 @@ class Config:
         self._secret_reader = SecretReader()
         self._load_env_file()
 
+    def get_env_var(self, base_name: str, default: str = None) -> str:
+        """
+        Get environment variable with environment-specific suffix.
+        Tries: VAR_{SUFFIX}, VAR, then default.
+        """
+        suffixed_name = f"{base_name}_{self._env_suffix}"
+        suffixed_value = os.getenv(suffixed_name)
+
+        if suffixed_value is not None:
+            return suffixed_value
+
+        base_value = os.getenv(base_name)
+        if base_value is not None:
+            return base_value
+
+        return default or ""
+
     def _load_env_file(self):
         """Load appropriate .env file."""
         project_root = Path(__file__).parent.parent.parent
         env_files = [
-            project_root / f"envs/.env.{self.env}",
+            # project_root / f"envs/.env.{self.env}",
+            project_root / "envs/.env",
         ]
 
         for env_file in env_files:
@@ -41,7 +59,19 @@ class Config:
             with open(active_env_file) as f:
                 return f.read().strip()
 
-        return os.getenv("APP_ENV", "local")
+    @property
+    def _env_suffix(self) -> str:
+        """Get environment-specific suffix for variable names."""
+        env_suffix_map = {
+            "local": "LOCAL",
+            "dev": "DEV",
+            "prod": "PROD",
+            "test": "TEST",
+        }
+
+        suffix = env_suffix_map.get(self.env, self.env.upper())
+        print(f"📋 Environment suffix: {suffix}")
+        return suffix
 
     @property
     def is_docker(self) -> bool:

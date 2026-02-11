@@ -15,18 +15,22 @@ class DatabaseConfig:
     def __init__(self, config: Config):
         self.config = config
 
+    def _get_db_env_var(self, base_name: str, default: str = None) -> str:
+        """Get database environment variable with environment suffix."""
+        return self.config.get_env_var(base_name, default)
+
     @property
     def database_url(self) -> str:
         """Build database connection string."""
         db_host = os.getenv("DB_HOST", "localhost")
         db_port = os.getenv("DB_PORT", "5432")
-        db_name = os.getenv("DB_NAME", "appdb")
-        db_user = os.getenv("DB_USER", "appuser")
+        db_name = self._get_db_env_var("DB_NAME", "appdb")
+        db_user = self._get_db_env_var("DB_USER", "appuser")
         db_password = self.config._secret_reader.read_secret("db_password")
 
         if not db_password:
             print("⚠️  Warning: No database password found in secrets")
-            db_password = os.getenv("DB_PASSWORD", "")
+            db_password = self._get_db_env_var("DB_PASSWORD", "")
 
         return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
@@ -35,8 +39,8 @@ class DatabaseConfig:
         """Safe version for logging (without password)."""
         db_host = os.getenv("DB_HOST", "localhost")
         db_port = os.getenv("DB_PORT", "5432")
-        db_name = os.getenv("DB_NAME", "appdb")
-        db_user = os.getenv("DB_USER", "appuser")
+        db_name = self._get_db_env_var("DB_NAME", "appdb")
+        db_user = self._get_db_env_var("DB_USER", "appuser")
 
         return f"postgresql://{db_user}:***@{db_host}:{db_port}/{db_name}"
 

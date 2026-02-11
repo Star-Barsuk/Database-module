@@ -78,7 +78,7 @@ docker::up() {
         docker::ports
 
         echo ""
-        docker::check_ports
+        docker::ports-check
     else
         log::error "Failed to start services"
         return 1

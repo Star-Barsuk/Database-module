@@ -67,10 +67,6 @@ include:
   - path: ./services/pgadmin.yml
     optional: true
 
-# Import profiles definition
-  # - path: ./services/profiles.yml
-  #   optional: true
-
 # Default services
 services:
   # Development application service

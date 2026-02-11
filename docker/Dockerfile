@@ -38,6 +38,10 @@ RUN --mount=type=cache,target=$UV_CACHE_DIR \
 # Copy source and install project
 COPY src/ src/
 COPY scripts/ scripts/
+
+COPY envs/ envs/
+COPY .active-env .active-env
+
 RUN --mount=type=cache,target=$UV_CACHE_DIR \
     uv sync --locked --no-dev
 
@@ -76,10 +80,15 @@ WORKDIR /app
 # Copy application from builder
 COPY --from=builder /app /app
 
-# Ensure proper permissions
+# RUN mkdir -p /app/envs
+
+# Ensure proper permissions for scripts and env files
 RUN chown -R appuser:appgroup /app && \
     chmod -R go-w /app && \
     chmod +x /app/scripts/entrypoint.app.sh
+    # chown appuser:appgroup /app/envs
+    # chmod -R 644 /app/envs/* && \
+    # chmod 644 /app/.active-env
 
 # Python environment
 ENV PATH="/app/.venv/bin:$PATH" \
